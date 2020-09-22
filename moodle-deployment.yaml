@@ -1,0 +1,46 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: d:\kompose convert
+    kompose.version: 1.19.0 (f63a961c)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: moodle
+  name: moodle
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: d:\kompose convert
+        kompose.version: 1.19.0 (f63a961c)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: moodle
+    spec:
+      containers:
+      - env:
+        - name: MOODLE_DATABASE_USER
+        - name: MOODLE_DATA_ROOT
+          value: /var/www/moodledata
+        - name: MOODLE_DB_HOST
+          value: mysql
+        - name: MOODLE_DB_NAME
+        - name: MOODLE_DB_PASSWORD
+        - name: MOODLE_EMAIL
+          value: warren.christian1@telus.com
+        - name: MOODLE_PASSWORD
+          value: pa33w0rd
+        - name: MOODLE_SITE_NAME
+        - name: MOODLE_USERNAME
+          value: admin
+        - name: MOODLE_WWW_ROOT
+        image: aesr/moodle
+        name: moodle
+        ports:
+        - containerPort: 80
+        resources: {}
+      restartPolicy: Always
+status: {}

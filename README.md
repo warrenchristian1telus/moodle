@@ -22,3 +22,8 @@
 ## docker system prune
 ## docker container prune
 ## docker volume prune
+
+# Convert to OpenShift (Kubernetes) - https://kompose.io/
+# kompose convert
+# kompose up
+# kompose down
