@@ -1,0 +1,48 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:$MYSQL_TAG
+    environment:
+      MYSQL_DATABASE: $DB_NAME
+      MYSQL_USER: $DB_USER
+      MYSQL_PASSWORD: $DB_PASSWORD
+      MYSQL_ROOT_PASSWORD: $DB_ROOT_PASSWORD
+    ports:
+      - '6033:3306'
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8081:80"
+    links:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+    depends_on:
+      - mysql
+  moodle:
+    image: aesr/moodle
+    ports:
+      - '8181:80'
+    links:
+      - mysql
+    environment:
+      MOODLE_DB_HOST: mysql
+      MOODLE_DB_NAME: $DB_NAME
+      MOODLE_DATABASE_USER: $DB_USER
+      MOODLE_DB_PASSWORD: $DB_PASSWORD
+      MOODLE_WWW_ROOT: $MOODLE_WWW_ROOT
+      MOODLE_DATA_ROOT: /var/www/moodledata
+      MOODLE_USERNAME: admin
+      MOODLE_PASSWORD: pa33w0rd
+      MOODLE_EMAIL: warren.christian1@telus.com
+      MOODLE_SITE_NAME: $MOODLE_SITE_NAME
+    volumes:
+      - ./moodledata:/var/www/moodledata
+      - ./moodle:/var/www/html
+    depends_on:
+      - mysql
+volumes:
+  moodle_data:
+    driver: local
+  moodledata_data:
+    driver: local
