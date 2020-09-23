@@ -1,0 +1,21 @@
+{
+  "name": "moodle",
+  "description": "Moodle installation for Docker to OpenShift Build",
+  "license": "GPL-3.0",
+  "type": "composer-plugin",
+  "authors": [
+    {
+      "name": "Warren Christian",
+      "email": "warren.christian1@telus.com"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/moodle/moodle.git"
+    }
+  ],
+  "require": {
+    "moodle/moodle": "3.9.2"
+  }
+}
