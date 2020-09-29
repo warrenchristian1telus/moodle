@@ -27,3 +27,11 @@
 # kompose convert
 # kompose up
 # kompose down
+
+
+#### OpenShift CodeReadyContainers
+# crc setup (use for local network settings - seems to need to run after every restart)
+# crc start
+#### OpenShift Console
+# oc status
+# 
