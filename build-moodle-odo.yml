@@ -12,7 +12,7 @@ spec:
   output:
     to:
       kind: ImageStreamTag
-      name: "moodle:latest"
+      name: "moodle"
       namespace: moodle-odo
   strategy:
     dockerStrategy:
