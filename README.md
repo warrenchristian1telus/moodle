@@ -30,8 +30,9 @@
 
 
 #### OpenShift CodeReadyContainers
+## before running, insure you "docker pull php:7.2-apache" or whatever source image you're using in the Dockerfile
 # crc setup (use for local network settings - seems to need to run after every restart)
 # crc start
 #### OpenShift Console
 # oc status
-# 
+# oc create imagestream moodle (create th eimage stream to use for install)

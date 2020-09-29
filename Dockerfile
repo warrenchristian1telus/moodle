@@ -22,7 +22,7 @@ RUN set -eux; \
 		libgd-tools \
 		libmcrypt-dev \
 		git \
-		mysql-client \
+		default-mysql-client \
 		vim \
 		wget \
 		libbz2-dev \
@@ -90,7 +90,7 @@ RUN apt-get update -y && apt-get install -o Dpkg::Options::="--force-confold" -y
 	libgd-tools \
 	libmcrypt-dev \
 	git \
-	mysql-client \
+	default-mysql-client \
 	vim \
 	wget \
 	&& apt-get autoremove
