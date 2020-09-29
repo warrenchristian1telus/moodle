@@ -108,7 +108,7 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" &&
 
 COPY .env /.env
 
-COPY app/config/sync/apache.conf /etc/apache2/sites-enabled/000-default.conf
+COPY /app/config/sync/apache.conf /etc/apache2/sites-enabled/000-default.conf
 
 COPY composer.json /composer.json
 
