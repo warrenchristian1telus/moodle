@@ -1,7 +1,7 @@
 apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
-  name: moodle-odo
+  name: moodle
   labels:
     app: moodle
 spec:
@@ -13,7 +13,7 @@ spec:
     to:
       kind: ImageStreamTag
       name: "moodle:latest"
-      namespace: moodle-odo
+      namespace: d9r6jk-dev
   strategy:
     dockerStrategy:
       dockerfilePath: Dockerfile

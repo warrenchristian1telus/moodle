@@ -8,11 +8,11 @@ services:
       MYSQL_PASSWORD: $DB_PASSWORD
       MYSQL_ROOT_PASSWORD: $DB_ROOT_PASSWORD
     ports:
-      - '6033:3306'
+      - '3306:3306'
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
-      - "8081:80"
+      - "8081:8081"
     links:
       - mysql
     environment:
@@ -22,7 +22,7 @@ services:
   moodle:
     image: aesr/moodle
     ports:
-      - '8181:80'
+      - '8080:8080'
     links:
       - mysql
     environment:
@@ -34,7 +34,7 @@ services:
       MOODLE_DATA_ROOT: /var/www/moodledata
       MOODLE_USERNAME: admin
       MOODLE_PASSWORD: pa33w0rd
-      MOODLE_EMAIL: warren.christian1@telus.com
+      MOODLE_EMAIL: admin@email.com
       MOODLE_SITE_NAME: $MOODLE_SITE_NAME
     volumes:
       - ./moodledata:/var/www/moodledata
