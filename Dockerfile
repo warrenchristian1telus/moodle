@@ -1,6 +1,9 @@
 FROM php:7.2-apache
 # TODO switch to buster once https://github.com/docker-library/php/issues/865 is resolved in a clean way (either in the PHP image or in PHP itself)
 
+EXPOSE 8080
+EXPOSE 3306
+
 # install the PHP extensions we need
 RUN set -eux; \
 	\
