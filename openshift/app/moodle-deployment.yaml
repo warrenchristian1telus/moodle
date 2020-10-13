@@ -1,0 +1,84 @@
+kind: DeploymentConfig
+apiVersion: apps.openshift.io/v1
+metadata:
+  name: ${APP_NAME}
+  namespace: ${PROJECT_NAMESPACE}
+  spec:
+    strategy:
+      dockerStrategy:
+        from:
+          kind: "ImageStreamTag"
+          name: "moodle:dev"
+      type: Rolling
+      rollingParams:
+        maxUnavailable: 50%
+        maxSurge: 75%
+      resources: {}
+      activeDeadlineSeconds: 21600
+    triggers:
+      - type: ConfigChange
+    replicas: 1
+    revisionHistoryLimit: 10
+    test: false
+    paused: false
+    selector:
+      app: ${APP_NAME}
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: ${APP_NAME}
+      spec:
+        volumes:
+          - name: moodle-storage-claim
+            persistentVolumeClaim:
+              claimName: moodle-storage-claim
+        containers:
+          - resources: {}
+            terminationMessagePath: /dev/termination-log
+            name: ${APP_NAME}
+            env:
+              - name: PROJECT_NAME
+                value: ${PROJECT_NAME}
+              - name: SITE_URL
+                value: '${SITE_URL}'
+              - name: MOODLE_VERSION
+                value: ${MOODLE_VERSION}
+              - name: MYSQL_TAG
+                value: '${MYSQL_TAG}'
+              - name: DB_NAME
+                value: ${DB_NAME}
+              - name: DB_HOST_NAME
+                value: ${DB_HOST_NAME}
+              - name: DB_PORT
+                value: ${DB_PORT}
+              - name: DB_USER
+                value: ${DB_USER}
+              - name: DB_PASSWORD
+                value: ${DB_PASSWORD}
+              - name: DB_ROOT_PASSWORD
+                value: ${DB_ROOT_PASSWORD}
+              - name: COMPOSER_NO_INTERACTION
+                value: ${COMPOSER_NO_INTERACTION}
+              - name: COMPOSER_MEMORY_LIMIT
+                value: '${COMPOSER_MEMORY_LIMIT}'
+              - name: HTTP_PORT
+                value: ${HTTP_PORT}
+              - name: HTTPS_PORT
+                value: ${HTTPS_PORT}
+              - name: PHPMYADMIN_PORT
+                value: '${PHPMYADMIN_PORT}'
+            ports:
+              - containerPort: ${CONTAINER_PORT}
+                protocol: TCP
+            imagePullPolicy: IfNotPresent
+            volumeMounts:
+              - name: moodle-storage-claim
+                mountPath: /moodledata
+            terminationMessagePolicy: File
+            image: '${BUILD_IMAGE}'
+        restartPolicy: Always
+        terminationGracePeriodSeconds: 30
+        dnsPolicy: ClusterFirst
+        securityContext: {}
+        schedulerName: default-scheduler

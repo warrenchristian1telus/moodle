@@ -1,3 +1,5 @@
 moodle/
 moodledata/
 php/
+.en*
+README.LOCAL.md

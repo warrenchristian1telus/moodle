@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    service: mysql
+  name: mysql
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+      creationTimestamp: null
+      labels:
+        service: mysql
+    spec:
+      containers:
+      - env:
+        - name: MYSQL_DATABASE
+          value: ${DB_NAME}
+        - name: MYSQL_PASSWORD
+          value: ${DB_PASSWORD}
+        - name: MYSQL_ROOT_PASSWORD
+          value: ${DB_ROOT_PASSWORD}
+        - name: MYSQL_USER
+          value: ${DB_USER}
+        image: 'mysql:'
+        name: mysql
+        ports:
+        - containerPort: ${DB_PORT}
+        resources: {}
+      restartPolicy: Always

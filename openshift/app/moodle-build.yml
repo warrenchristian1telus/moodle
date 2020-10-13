@@ -1,0 +1,20 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: ${APP_NAME}
+  namespace: ${PROJECT_NAMESPACE}
+  labels:
+    app: ${APP_NAME}
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/warrenchristian1telus/moodle.git'
+  output:
+    to:
+      kind: ImageStreamTag
+      name: "${GIT_PROJECT}:${GIT_TAG}"
+      namespace: ${PROJECT_NAMESPACE}
+  strategy:
+    dockerStrategy:
+      dockerfilePath: Dockerfile

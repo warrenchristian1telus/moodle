@@ -40,11 +40,11 @@ $CFG = new stdClass();
 
 $CFG->dbtype    = 'mysqli';      // 'pgsql', 'mariadb', 'mysqli', 'sqlsrv' or 'oci'
 $CFG->dblibrary = 'native';     // 'native' only at the moment
-$CFG->dbhost    = 'localhost';  // eg 'localhost' or 'db.isp.com' or IP
-$CFG->dbname    = 'moodle';     // database name, eg moodle
-$CFG->dbuser    = 'moodle';   // your database username
-$CFG->dbpass    = 'rbBjP4dn*sLu7r9zm&yPczZNc';   // your database password
-$CFG->prefix    = 'mdl_';       // prefix to use for all table names
+$CFG->dbhost    = getenv('DB_HOST_NAME');  // eg 'localhost' or 'db.isp.com' or IP
+$CFG->dbname    = getenv('DB_NAME');     // database name, eg moodle
+$CFG->dbuser    = getenv('DB_USER');   // your database username
+$CFG->dbpass    = getenv('DB_PASSWORD');   // your database password
+$CFG->prefix    = '';       // prefix to use for all table names
 $CFG->dboptions = array(
     'dbpersist' => false,       // should persistent database connections be
                                 //  used? set to 'false' for the most stable
@@ -56,7 +56,7 @@ $CFG->dboptions = array(
                                 //  (please note mysql is always using socket
                                 //  if dbhost is 'localhost' - if you need
                                 //  local port connection use '127.0.0.1')
-    'dbport'    => '3306',      // the TCP port number to use when connecting
+    'dbport'=> getenv('DB_PORT'),// the TCP port number to use when connecting
                                 //  to the server. keep empty string for the
                                 //  default port
     'dbhandlesoptions' => false,// On PostgreSQL poolers like pgbouncer don't
@@ -132,7 +132,7 @@ $CFG->dboptions = array(
 // If you need both intranet and Internet access please read
 // http://docs.moodle.org/en/masquerading
 
-$CFG->wwwroot   = 'http://moodle.apps.pathfinder.aro.devops.gov.bc.ca:8080';
+$CFG->wwwroot   = getenv('SITE_URL').':'.getenv('HTTP_PORT');
 
 
 //=========================================================================
@@ -148,7 +148,7 @@ $CFG->wwwroot   = 'http://moodle.apps.pathfinder.aro.devops.gov.bc.ca:8080';
 //
 // - On Windows systems you might specify something like 'c:\moodledata'
 
-$CFG->dataroot  = '/vendor/moodle/moodledata';
+$CFG->dataroot  = getenv('MOODLE_DATA_PATH');
 
 
 //=========================================================================

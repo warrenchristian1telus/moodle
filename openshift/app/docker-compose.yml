@@ -8,11 +8,11 @@ services:
       MYSQL_PASSWORD: $DB_PASSWORD
       MYSQL_ROOT_PASSWORD: $DB_ROOT_PASSWORD
     ports:
-      - '3306:3306'
+      - '$DB_PORT'
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
-      - "8081:8081"
+      - "$PHPMYADMIN_PORT"
     links:
       - mysql
     environment:
@@ -22,20 +22,20 @@ services:
   moodle:
     image: aesr/moodle
     ports:
-      - '8080:8080'
+      - '$HTTP_PORT'
     links:
       - mysql
     environment:
       MOODLE_DB_HOST: mysql
       MOODLE_DB_NAME: $DB_NAME
-      MOODLE_DATABASE_USER: $DB_USER
+      MOODLE_DATABASE_USER: $DB_NAME
       MOODLE_DB_PASSWORD: $DB_PASSWORD
-      MOODLE_WWW_ROOT: $MOODLE_WWW_ROOT
+      MOODLE_WWW_ROOT: $SITE_URL
       MOODLE_DATA_ROOT: /var/www/moodledata
       MOODLE_USERNAME: admin
       MOODLE_PASSWORD: pa33w0rd
       MOODLE_EMAIL: admin@email.com
-      MOODLE_SITE_NAME: $MOODLE_SITE_NAME
+      MOODLE_SITE_NAME: $PROJECT_NAME
     volumes:
       - ./moodledata:/var/www/moodledata
       - ./moodle:/var/www/html

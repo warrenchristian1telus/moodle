@@ -1,0 +1,526 @@
+{
+  "apiVersion": "v1",
+  "kind": "Template",
+  "labels": {
+    "template": "moodle-mysql-persistent-template"
+  },
+  "message": "The following service(s) have been created in your project: ${DB_NAME}.\n\n       Username: ${DB_USER}\n       Password: ${DB_PASSWORD}\n  Database Name: ${DB_NAME}\n Connection URL: mysql://${DB_NAME}:${DB_PORT}/\n\nFor more information about using this template, including OpenShift considerations, see https://github.com/sclorg/mysql-container/blob/master/5.7/root/usr/share/container-scripts/mysql/README.md.",
+  "metadata": {
+    "annotations": {
+      "description": "MySQL database service, with persistent storage. For more information about using this template, including OpenShift considerations, see https://github.com/sclorg/mysql-container/blob/master/5.7/root/usr/share/container-scripts/mysql/README.md.\n\nNOTE: Scaling to more than one replica is not supported. You must have persistent volumes available in your cluster to use this template.",
+      "iconClass": "icon-mysql-database",
+      "openshift.io/display-name": "MySQL",
+      "openshift.io/documentation-url": "https://docs.okd.io/latest/using_images/db_images/mysql.html",
+      "openshift.io/long-description": "This template provides a standalone MySQL server with a database created.  The database is stored on persistent storage.  The database name, username, and password are chosen via parameters when provisioning this service.",
+      "openshift.io/provider-display-name": "Red Hat, Inc.",
+      "openshift.io/support-url": "https://access.redhat.com",
+      "tags": "database,mysql"
+    },
+    "name": "mysql-persistent"
+  },
+  "objects": [
+    {
+			"apiVersion": "v1",
+			"kind": "Secret",
+			"metadata": {
+				"annotations": {
+					"template.openshift.io/expose-database_name": "{.data['database-name']}",
+					"template.openshift.io/expose-password": "{.data['database-password']}",
+					"template.openshift.io/expose-root_password": "{.data['database-root-password']}",
+					"template.openshift.io/expose-username": "{.data['database-user']}"
+				},
+				"name": "${DB_SERVICE_NAME}"
+			},
+			"stringData": {
+				"database-name": "${DB_NAME}",
+				"database-password": "${DB_PASSWORD}",
+				"database-root-password": "${DB_ROOT_PASSWORD}",
+				"database-user": "${DB_USER}"
+			}
+		},
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "${APP_NAME}-db"
+      },
+      "spec": {
+        "ports": [
+          {
+            "name": "${DB_HOST_NAME}",
+            "port": 3306
+          }
+        ],
+        "selector": {
+          "name": "${DB_HOST_NAME}"
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "${APP_NAME}-app"
+      },
+      "spec": {
+        "ports": [
+          {
+            "name": "${APP_NAME}",
+            "port": 8080
+          }
+        ],
+        "selector": {
+          "name": "${APP_NAME}"
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "PersistentVolumeClaim",
+      "metadata": {
+        "name": "${APP_NAME}-db"
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteOnce"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "${DB_VOLUME_CAPACITY}"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "PersistentVolumeClaim",
+      "metadata": {
+        "name": "${APP_NAME}-data"
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteMany"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "${MOODLE_VOLUME_CAPACITY}"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "DeploymentConfig",
+      "metadata": {
+        "annotations": {
+          "template.alpha.openshift.io/wait-for-ready": "true"
+        },
+        "name": "${APP_NAME}-db"
+      },
+      "spec": {
+        "replicas": 1,
+        "selector": {
+          "name": "${APP_NAME}-db"
+        },
+        "strategy": {
+          "type": "Recreate"
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "name": "${APP_NAME}-db"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "env": [
+                  {
+                    "name": "MYSQL_USER",
+                    "valueFrom": {
+											"secretKeyRef": {
+												"key": "database-user",
+												"name": "${DB_SERVICE_NAME}"
+											}
+										}
+                  },
+                  {
+										"name": "MYSQL_PASSWORD",
+										"valueFrom": {
+											"secretKeyRef": {
+												"key": "database-password",
+												"name": "${DB_SERVICE_NAME}"
+											}
+										}
+									},
+                  {
+										"name": "MYSQL_ROOT_PASSWORD",
+										"valueFrom": {
+											"secretKeyRef": {
+												"key": "database-root-password",
+												"name": "${DB_SERVICE_NAME}"
+											}
+										}
+									},
+									{
+										"name": "MYSQL_DATABASE",
+										"valueFrom": {
+											"secretKeyRef": {
+												"key": "database-name",
+												"name": "${DB_SERVICE_NAME}"
+											}
+										}
+									}
+                ],
+                "image": " ",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "${APP_NAME}-db",
+                "ports": [
+                  {
+                    "containerPort": 3306
+                  }
+                ],
+                "resources": {
+                  "limits": {
+                    "memory": "${DB_MEMORY_LIMIT}"
+                  }
+                },
+                "volumeMounts": [
+                  {
+                    "mountPath": "/var/lib/mysql/data",
+                    "name": "${DB_NAME}-db-data"
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "${DB_NAME}-db-data",
+                "persistentVolumeClaim": {
+                  "claimName": "${DB_NAME}"
+                }
+              }
+            ]
+          }
+        },
+        "triggers": [
+          {
+            "imageChangeParams": {
+              "automatic": true,
+              "containerNames": [
+                "mysql"
+              ],
+              "from": {
+                "kind": "ImageStreamTag",
+                "name": "mysql:${MYSQL_TAG}",
+                "namespace": "${PROJECT_NAMESPACE}"
+              }
+            },
+            "type": "ImageChange"
+          },
+          {
+            "type": "ConfigChange"
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "DeploymentConfig",
+      "metadata": {
+        "annotations": {
+          "template.alpha.openshift.io/wait-for-ready": "true"
+        },
+        "name": "${APP_NAME}-app"
+      },
+      "spec": {
+        "replicas": 2,
+        "selector": {
+          "name": "${APP_NAME}-app"
+        },
+        "strategy": {
+          "type": "Recreate"
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "name": "${APP_NAME}-app"
+            }
+          },
+          "spec": {
+            "source": {
+              "type": "Git",
+              "git": {
+                "uri": "${GIT_URL}"
+              }
+            },
+            "output": {
+              "to": {
+                "kind": "ImageStreamTag",
+                "name": "moodle:openshift",
+                "namespace": "${PROJECT_NAMESPACE}"
+              }
+            },
+            "strategy": {
+              "dockerStrategy": {
+                "dockerfilePath": "Dockerfile"
+              }
+            },
+            "containers": [
+              {
+                "env": [
+                  {
+                    "name": "MYSQL_USER",
+                    "valueFrom": {
+											"secretKeyRef": {
+												"key": "database-user",
+												"name": "${DB_SERVICE_NAME}"
+											}
+										}
+                  },
+                  {
+										"name": "MYSQL_PASSWORD",
+										"valueFrom": {
+											"secretKeyRef": {
+												"key": "database-password",
+												"name": "${DB_SERVICE_NAME}"
+											}
+										}
+									},
+                  {
+										"name": "MYSQL_ROOT_PASSWORD",
+										"valueFrom": {
+											"secretKeyRef": {
+												"key": "database-root-password",
+												"name": "${DB_SERVICE_NAME}"
+											}
+										}
+									},
+									{
+										"name": "MYSQL_DATABASE",
+										"valueFrom": {
+											"secretKeyRef": {
+												"key": "database-name",
+												"name": "${DB_SERVICE_NAME}"
+											}
+										}
+									}
+                ],
+                "image": " ",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "mysql",
+                "ports": [
+                  {
+                    "containerPort": 3306
+                  }
+                ],
+                "resources": {
+                  "limits": {
+                    "memory": "${DB_MEMORY_LIMIT}"
+                  }
+                },
+                "volumeMounts": [
+                  {
+                    "mountPath": "/var/lib/mysql/data",
+                    "name": "${APP_NAME}-data"
+                  }
+                ]
+              },
+              {
+                "env": [
+                  {
+                    "name": "MYSQL_USER",
+                    "valueFrom": {
+											"secretKeyRef": {
+												"key": "database-user",
+												"name": "${DB_SERVICE_NAME}"
+											}
+										}
+                  },
+                  {
+										"name": "MYSQL_PASSWORD",
+										"valueFrom": {
+											"secretKeyRef": {
+												"key": "database-password",
+												"name": "${DB_SERVICE_NAME}"
+											}
+										}
+									},
+                  {
+										"name": "MYSQL_ROOT_PASSWORD",
+										"valueFrom": {
+											"secretKeyRef": {
+												"key": "database-root-password",
+												"name": "${DB_SERVICE_NAME}"
+											}
+										}
+									},
+									{
+										"name": "MYSQL_DATABASE",
+										"valueFrom": {
+											"secretKeyRef": {
+												"key": "database-name",
+												"name": "${DB_SERVICE_NAME}"
+											}
+										}
+									}
+                ],
+                "name": "${APP_NAME}",
+                "ports": [
+                  {
+                    "containerPort": 8080
+                  }
+                ],
+                "resources": {
+                  "limits": {
+                    "memory": "${MOODLE_MEMORY_LIMIT}"
+                  }
+                },
+                "volumeMounts": [
+                  {
+                    "mountPath": "${MOODLE_DATA_PATH}",
+                    "name": "${APP_NAME}-data"
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "${APP_NAME}-data",
+                "persistentVolumeClaim": {
+                  "claimName": "${APP_NAME}-data"
+                }
+              }
+            ]
+          }
+        },
+        "triggers": [
+          {
+            "imageChangeParams": {
+              "automatic": true,
+              "containerNames": [
+                "mysql"
+              ],
+              "from": {
+                "kind": "ImageStreamTag",
+                "name": "mysql:${MYSQL_TAG}",
+                "namespace": "${PROJECT_NAMESPACE}"
+              }
+            },
+            "type": "ImageChange"
+          },
+          {
+            "type": "ConfigChange"
+          }
+        ]
+      }
+    }
+  ],
+  "parameters": [
+    {
+      "description": "Application name.",
+      "displayName": "App Name",
+      "name": "APP_NAME",
+      "required": true,
+      "value": "${APP_NAME}"
+    },
+    {
+      "description": "Database service name.",
+      "displayName": "DB Service Name",
+      "name": "DB_SERVICE_NAME",
+      "required": true,
+      "value": "${DB_SERVICE_NAME}"
+    },
+    {
+      "description": "Database host name.",
+      "displayName": "DB Host",
+      "name": "DB_HOST_NAME",
+      "required": true,
+      "value": "${DB_HOST_NAME}"
+    },
+    {
+      "description": "Maximum amount of memory the container can use.",
+      "displayName": "Memory Limit",
+      "name": "DB_MEMORY_LIMIT",
+      "required": true,
+      "value": "${DB_MEMORY_LIMIT}"
+    },
+    {
+      "description": "Volume space available for data, e.g. 512Mi, 2Gi.",
+      "displayName": "Volume Capacity",
+      "name": "DB_VOLUME_CAPACITY",
+      "required": true,
+      "value": "${DB_VOLUME_CAPACITY}"
+    },
+    {
+      "description": "Volume space available for Moodle application, e.g. 512Mi, 2Gi.",
+      "displayName": "Moodle Volume Capacity",
+      "name": "MOODLE_VOLUME_CAPACITY",
+      "required": true,
+      "value": "${MOODLE_VOLUME_CAPACITY}"
+    },
+    {
+      "description": "Ports opened for connections to the application from the Internet.",
+      "displayName": "App Port",
+      "name": "HTTP_PORT",
+      "required": true,
+      "value": "${HTTP_PORT}"
+    },
+    {
+      "description": "Database Port opened for connections from other containers.",
+      "displayName": "DB Port",
+      "name": "DB_PORT",
+      "required": true,
+      "value": "${DB_PORT}"
+    },
+    {
+      "description": "The OpenShift Namespace where the ImageStream resides.",
+      "displayName": "Namespace",
+      "name": "PROJECT_NAMESPACE",
+      "value": "${PROJECT_NAMESPACE}"
+    },
+    {
+      "description": "The name of the OpenShift Service exposed for the database.",
+      "displayName": "Database Service Name",
+      "name": "DB_HOST",
+      "required": true,
+      "value": "${DB_HOST}"
+    },
+    {
+      "description": "Name of the MySQL database accessed.",
+      "displayName": "MySQL Database Name",
+      "name": "DB_NAME",
+      "required": true,
+      "value": "${DB_NAME}"
+    },
+    {
+      "description": "Username for MySQL user that will be used for accessing the database.",
+      "displayName": "MySQL Connection Username",
+      "name": "DB_USER",
+      "required": true,
+      "value": "${DB_USER}"
+    },
+    {
+      "description": "Password for the MySQL connection user.",
+      "displayName": "MySQL Connection Password",
+      "name": "DB_PASSWORD",
+      "required": true,
+      "value": "${DB_PASSWORD}"
+    },
+    {
+      "description": "Password for the MySQL root user.",
+      "displayName": "MySQL root user Password",
+      "from": "[a-zA-Z0-9]{32}",
+      "generate": "expression",
+      "name": "DB_ROOT_PASSWORD",
+      "required": true
+    },
+    {
+      "description": "MySQL image to be pulled from github.",
+      "displayName": "MySQL Image",
+      "name": "DB_BUILD_IMAGE",
+      "required": true,
+      "value": "${DB_BUILD_IMAGE}"
+    }
+  ]
+}

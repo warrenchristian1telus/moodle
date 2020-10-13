@@ -1,0 +1,654 @@
+{
+    "kind": "List",
+    "apiVersion": "v1",
+    "metadata": {},
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "Secret",
+            "metadata": {
+                "annotations": {
+                    "template.openshift.io/expose-database_name": "{.data['database-name']}",
+                    "template.openshift.io/expose-password": "{.data['database-password']}",
+                    "template.openshift.io/expose-root_password": "{.data['database-root-password']}",
+                    "template.openshift.io/expose-username": "{.data['database-user']}"
+                },
+                "labels": {
+                    "template": "mysql-persistent-template"
+                },
+                "name": "moodle-mysql"
+            },
+            "stringData": {
+                "database-name": "moodle",
+                "database-password": "rbBjP4dn*sLu7r9zm\u0026yPczZNc",
+                "database-root-password": "cW4TAllPNH7o5aTYMJv2XwGL0c2eibX0",
+                "database-user": "moodle"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "labels": {
+                    "template": "mysql-persistent-template"
+                },
+                "name": "moodle"
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "name": "mysql",
+                        "port": 3306
+                    }
+                ],
+                "selector": {
+                    "name": "mysql"
+                }
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "labels": {
+                    "template": "mysql-persistent-template"
+                },
+                "name": "mysql"
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "resources": {
+                    "requests": {
+                        "storage": "1Gi"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "apps.openshift.io/v1",
+            "kind": "DeploymentConfig",
+            "metadata": {
+                "annotations": {
+                    "template.alpha.openshift.io/wait-for-ready": "true"
+                },
+                "labels": {
+                    "template": "mysql-persistent-template"
+                },
+                "name": "moodle-mysql"
+            },
+            "spec": {
+                "replicas": 1,
+                "selector": {
+                    "name": "moodle-mysql"
+                },
+                "strategy": {
+                    "type": "Recreate"
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "name": "moodle-mysql"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "env": [
+                                    {
+                                        "name": "MYSQL_USER",
+                                        "valueFrom": {
+                                            "secretKeyRef": {
+                                                "key": "database-user",
+                                                "name": "moodle-mysql"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "MYSQL_PASSWORD",
+                                        "valueFrom": {
+                                            "secretKeyRef": {
+                                                "key": "database-password",
+                                                "name": "moodle-mysql"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "MYSQL_ROOT_PASSWORD",
+                                        "valueFrom": {
+                                            "secretKeyRef": {
+                                                "key": "database-root-password",
+                                                "name": "moodle-mysql"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "MYSQL_DATABASE",
+                                        "valueFrom": {
+                                            "secretKeyRef": {
+                                                "key": "database-name",
+                                                "name": "moodle-mysql"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "image": " ",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "mysql",
+                                "ports": [
+                                    {
+                                        "containerPort": 3306
+                                    }
+                                ],
+                                "resources": {
+                                    "limits": {
+                                        "memory": "1Gi"
+                                    }
+                                },
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/var/lib/mysql/data",
+                                        "name": "moodle-data"
+                                    }
+                                ]
+                            }
+                        ],
+                        "volumes": [
+                            {
+                                "name": "moodle-data",
+                                "persistentVolumeClaim": {
+                                    "claimName": "moodle"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "triggers": [
+                    {
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "mysql"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "name": "mysql:5.7",
+                                "namespace": "local"
+                            }
+                        },
+                        "type": "ImageChange"
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Secret",
+            "metadata": {
+                "annotations": {
+                    "template.openshift.io/expose-database_name": "{.data['database-name']}",
+                    "template.openshift.io/expose-password": "{.data['database-password']}",
+                    "template.openshift.io/expose-root_password": "{.data['database-root-password']}",
+                    "template.openshift.io/expose-username": "{.data['database-user']}"
+                },
+                "labels": {
+                    "template": "mysql-persistent-template"
+                },
+                "name": "moodle-mysql"
+            },
+            "stringData": {
+                "database-name": "moodle",
+                "database-password": "rbBjP4dn*sLu7r9zm\u0026yPczZNc",
+                "database-root-password": "cW4TAllPNH7o5aTYMJv2XwGL0c2eibX0",
+                "database-user": "moodle"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "labels": {
+                    "template": "mysql-persistent-template"
+                },
+                "name": "moodle"
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "name": "mysql",
+                        "port": 3306
+                    }
+                ],
+                "selector": {
+                    "name": "mysql"
+                }
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "labels": {
+                    "template": "mysql-persistent-template"
+                },
+                "name": "mysql"
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "resources": {
+                    "requests": {
+                        "storage": "1Gi"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "apps.openshift.io/v1",
+            "kind": "DeploymentConfig",
+            "metadata": {
+                "annotations": {
+                    "template.alpha.openshift.io/wait-for-ready": "true"
+                },
+                "labels": {
+                    "template": "mysql-persistent-template"
+                },
+                "name": "moodle-mysql"
+            },
+            "spec": {
+                "replicas": 1,
+                "selector": {
+                    "name": "moodle-mysql"
+                },
+                "strategy": {
+                    "type": "Recreate"
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "name": "moodle-mysql"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "env": [
+                                    {
+                                        "name": "MYSQL_USER",
+                                        "valueFrom": {
+                                            "secretKeyRef": {
+                                                "key": "database-user",
+                                                "name": "moodle-mysql"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "MYSQL_PASSWORD",
+                                        "valueFrom": {
+                                            "secretKeyRef": {
+                                                "key": "database-password",
+                                                "name": "moodle-mysql"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "MYSQL_ROOT_PASSWORD",
+                                        "valueFrom": {
+                                            "secretKeyRef": {
+                                                "key": "database-root-password",
+                                                "name": "moodle-mysql"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "MYSQL_DATABASE",
+                                        "valueFrom": {
+                                            "secretKeyRef": {
+                                                "key": "database-name",
+                                                "name": "moodle-mysql"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "image": " ",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "mysql",
+                                "ports": [
+                                    {
+                                        "containerPort": 3306
+                                    }
+                                ],
+                                "resources": {
+                                    "limits": {
+                                        "memory": "1Gi"
+                                    }
+                                },
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/var/lib/mysql/data",
+                                        "name": "moodle-data"
+                                    }
+                                ]
+                            }
+                        ],
+                        "volumes": [
+                            {
+                                "name": "moodle-data",
+                                "persistentVolumeClaim": {
+                                    "claimName": "moodle"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "triggers": [
+                    {
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "mysql"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "name": "mysql:5.7",
+                                "namespace": "local"
+                            }
+                        },
+                        "type": "ImageChange"
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ]
+            }
+        },
+        {
+          "apiVersion": "apps/v1",
+          "kind": "Deployment",
+          "metadata": {
+              "labels": {
+                  "service": "moodle-mysql",
+                  "template": "mysql-persistent-template"
+              },
+              "name": "mysql"
+          },
+          "spec": {
+              "replicas": 1,
+              "selector": {
+                  "matchLabels": {
+                      "service": "moodle-mysql"
+                  }
+              },
+              "template": {
+                  "metadata": {
+                      "labels": {
+                          "service": "moodle-mysql"
+                      }
+                  },
+                  "spec": {
+                      "containers": [
+                          {
+                              "env": [
+                                  {
+                                      "name": "MYSQL_DATABASE",
+                                      "value": "moodle"
+                                  },
+                                  {
+                                      "name": "MYSQL_PASSWORD",
+                                      "value": "rbBjP4dn*sLu7r9zm\u0026yPczZNc"
+                                  },
+                                  {
+                                      "name": "MYSQL_ROOT_PASSWORD",
+                                      "value": "cthuNn5TEoSbxTsOV75CAuSfRTgKUVX7"
+                                  },
+                                  {
+                                      "name": "MYSQL_USER",
+                                      "value": "moodle"
+                                  }
+                              ],
+                              "image": "mysql:5.7",
+                              "name": "mysql",
+                              "ports": [
+                                  {
+                                      "containerPort": 3306
+                                  }
+                              ],
+                              "resources": {}
+                          }
+                      ],
+                      "restartPolicy": "Always"
+                  }
+              },
+              "triggers": {
+                  "imageChangeParams": {
+                      "automatic": true,
+                      "containerNames": [
+                          "moodle-mysql"
+                      ],
+                      "from": {
+                          "kind": "ImageStreamTag",
+                          "name": "mysql:5.7"
+                      },
+                      "type": "ImageChange"
+                  },
+                  "strategy": {
+                      "type": "Rolling"
+                  },
+                  "type": "ConfigChange"
+              }
+          }
+      },
+
+
+
+
+
+
+
+
+        {
+          "apiVersion": "v1",
+          "kind": "Secret",
+          "metadata": {
+              "annotations": {
+                  "template.openshift.io/expose-database_name": "{.data['database-name']}",
+                  "template.openshift.io/expose-password": "{.data['database-password']}",
+                  "template.openshift.io/expose-root_password": "{.data['database-root-password']}",
+                  "template.openshift.io/expose-username": "{.data['database-user']}"
+              },
+              "labels": {
+                  "template": "moodle-persistent-template"
+              },
+              "name": "moodle-secret"
+          },
+          "stringData": {
+              "database-name": "moodle",
+              "database-password": "rbBjP4dn*sLu7r9zm\u0026yPczZNc",
+              "database-root-password": "${DB_ROOT_PASSWORD}",
+              "database-user": "moodle"
+          }
+      },
+      {
+          "apiVersion": "v1",
+          "kind": "Service",
+          "metadata": {
+              "labels": {
+                  "template": "moodle-persistent-template"
+              },
+              "name": "moodle-app"
+          },
+          "spec": {
+              "ports": [
+                  {
+                      "name": "moodle",
+                      "port": 8080
+                  }
+              ],
+              "selector": {
+                  "name": "moodle"
+              }
+          }
+      },
+      {
+          "apiVersion": "v1",
+          "kind": "PersistentVolumeClaim",
+          "metadata": {
+              "labels": {
+                  "template": "moodle-persistent-template"
+              },
+              "name": "moodle-app"
+          },
+          "spec": {
+              "accessModes": [
+                  "ReadWriteMany"
+              ],
+              "resources": {
+                  "requests": {
+                      "storage": "5Gi"
+                  }
+              }
+          }
+      },
+      {
+          "apiVersion": "apps.openshift.io/v1",
+          "kind": "DeploymentConfig",
+          "metadata": {
+              "annotations": {
+                  "template.alpha.openshift.io/wait-for-ready": "true"
+              },
+              "labels": {
+                  "template": "moodle-persistent-template"
+              },
+              "name": "moodle-app"
+          },
+          "spec": {
+              "replicas": 1,
+              "selector": {
+                  "name": "moodle-app"
+              },
+              "strategy": {
+                  "type": "Recreate"
+              },
+              "template": {
+                  "metadata": {
+                      "labels": {
+                          "name": "moodle-app"
+                      }
+                  },
+                  "spec": {
+                      "containers": [
+                          {
+                              "env": [
+                                  {
+                                      "name": "MYSQL_USER",
+                                      "valueFrom": {
+                                          "secretKeyRef": {
+                                              "key": "database-user",
+                                              "name": "moodle-aro-mysql"
+                                          }
+                                      }
+                                  },
+                                  {
+                                      "name": "MYSQL_PASSWORD",
+                                      "valueFrom": {
+                                          "secretKeyRef": {
+                                              "key": "database-password",
+                                              "name": "moodle-aro-mysql"
+                                          }
+                                      }
+                                  },
+                                  {
+                                      "name": "MYSQL_ROOT_PASSWORD",
+                                      "valueFrom": {
+                                          "secretKeyRef": {
+                                              "key": "database-root-password",
+                                              "name": "moodle-aro-mysql"
+                                          }
+                                      }
+                                  },
+                                  {
+                                      "name": "MYSQL_DATABASE",
+                                      "valueFrom": {
+                                          "secretKeyRef": {
+                                              "key": "database-name",
+                                              "name": "moodle-aro-mysql"
+                                          }
+                                      }
+                                  }
+                              ],
+                              "image": " ",
+                              "imagePullPolicy": "IfNotPresent",
+                              "name": "moodle",
+                              "ports": [
+                                  {
+                                      "containerPort": 8080
+                                  }
+                              ],
+                              "resources": {
+                                  "limits": {
+                                      "memory": "1Gi"
+                                  }
+                              },
+                              "volumeMounts": [
+                                  {
+                                      "mountPath": "${MOODLE_DATA_PATH}",
+                                      "name": "moodle-data"
+                                  }
+                              ]
+                          }
+                      ],
+                      "output": {
+                          "to": {
+                              "kind": "ImageStreamTag",
+                              "name": "${GIT_PROJECT}:${GIT_TAG}",
+                              "namespace": "local"
+                          }
+                      },
+                      "source": {
+                          "git": {
+                              "uri": "${GIT_URL}"
+                          },
+                          "type": "Git"
+                      },
+                      "strategy": {
+                          "dockerStrategy": {
+                              "dockerfilePath": "Dockerfile"
+                          }
+                      },
+                      "volumes": [
+                          {
+                              "name": "moodle-data",
+                              "persistentVolumeClaim": {
+                                  "claimName": "moodle-data"
+                              }
+                          }
+                      ]
+                  }
+              },
+              "triggers": [
+                  {
+                      "imageChangeParams": {
+                          "automatic": true,
+                          "containerNames": [
+                              "mysql"
+                          ],
+                          "from": {
+                              "kind": "ImageStreamTag",
+                              "name": "moodle:openshift"
+                          }
+                      },
+                      "type": "ImageChange"
+                  },
+                  {
+                      "type": "ConfigChange"
+                  }
+              ]
+          }
+      }
+    ]
+}

@@ -1,0 +1,161 @@
+kind: "BuildConfig"
+apiVersion: "v1"
+metadata:
+  name: "sample-pipeline"
+spec:
+  strategy:
+    jenkinsPipelineStrategy:
+      env:
+        - name: "PROJECT_NAME"
+          value: "moodle-aro"
+        - name: "APP_NAME"
+          value: "moodle"
+        - name: "PROJECT_NAMESPACE"
+          value: "local"
+        - name: "BUILD_IMAGE"
+          value: "warrenchristian1/moodle:openshift"
+        - name: "GIT_PROJECT"
+          value: "moodle"
+        - name: "GIT_TAG"
+          value: "openshift"
+        - name: "GIT_URL"
+          value: "https://github.com/warrenchristian1telus/moodle.git"
+        - name: "SITE_URL"
+          value: "http://localhost:8080"
+        - name: "HTTP_PORT"
+          value: 8080
+        - name: "HTTPS_PORT"
+          value: 4433
+        - name: "PHPMYADMIN_PORT"
+          value: 8181
+        - name: "CONTAINER_PORT"
+          value: 8080
+        - name: "DB_BUILD_IMAGE"
+          value: "mysql:5.7"
+        - name: "DB_SERVICE_NAME"
+          value: "moodle-mysql"
+        - name: "DB_HOST_NAME"
+          value: "mysql"
+        - name: "DB_NAME"
+          value: "moodle"
+        - name: "DB_PORT"
+          value: 3306
+        - name: "DB_MEMORY_LIMIT"
+          value: "1Gi"
+        - name: "DB_VOLUME_CAPACITY"
+          value: "1Gi"
+        - name: "DB_USER"
+          value: "moodle"
+        - name: "DB_PASSWORD"
+          value: "rbBjP4dn*sLu7r9zm&yPczZNc"
+        - name: "DB_ROOT_PASSWORD"
+          value: "rbBjP4dn*sLu7r9zm&yPczZNc"
+        - name: "MOODLE_VERSION"
+          value: "3.9.2"
+        - name: "MOODLE_VOLUME_CAPACITY"
+          value: "5Gi"
+        - name: "MOODLE_MEMORY_LIMIT"
+          value: "1Gi"
+        - name: "MOODLE_DATA_PATH"
+          value: "/vendor/moodle/moodledata"
+        - name: "COMPOSER_MEMORY_LIMIT"
+          value: -1
+        - name: "COMPOSER_NO_INTERACTION"
+          value: 1
+      jenkinsfile: |-
+        def templatePathMySQL = 'mysql-persistent-template.json'
+        def templatePathMoodle = 'mysql-persistent-template.json'
+        def templateName = 'moodle'
+
+        pipeline {
+          agent {
+            node {
+              label 'moodle'
+            }
+          }
+          options {
+            timeout(time: 20, unit: 'MINUTES') 
+          }
+          stages {
+            stage('preamble') {
+                steps {
+                    script {
+                        openshift.withCluster() {
+                            openshift.withProject() {
+                                echo "Using project: ${openshift.project()}"
+                            }
+                        }
+                    }
+                }
+            }
+            stage('cleanup') {
+              steps {
+                script {
+                    openshift.withCluster() {
+                        openshift.withProject() {
+                          openshift.selector("all", [ template : templateName ]).delete() 
+                          if (openshift.selector("secrets", templateName).exists()) { 
+                            openshift.selector("secrets", templateName).delete()
+                          }
+                        }
+                    }
+                }
+              }
+            }
+            stage('create') {
+              steps {
+                script {
+                    openshift.withCluster() {
+                        openshift.withProject() {
+                          openshift.newApp(templatePathMySQL) 
+                          openshift.newApp(templatePathMoodle) 
+                        }
+                    }
+                }
+              }
+            }
+            stage('build') {
+              steps {
+                script {
+                    openshift.withCluster() {
+                        openshift.withProject() {
+                          def builds = openshift.selector("bc", templateName).related('builds')
+                          timeout(5) { 
+                            builds.untilEach(1) {
+                              return (it.object().status.phase == "Complete")
+                            }
+                          }
+                        }
+                    }
+                }
+              }
+            }
+            stage('deploy') {
+              steps {
+                script {
+                    openshift.withCluster() {
+                        openshift.withProject() {
+                          def rm = openshift.selector("dc", templateName).rollout().latest()
+                          timeout(5) { 
+                            openshift.selector("dc", templateName).related('pods').untilEach(1) {
+                              return (it.object().status.phase == "Running")
+                            }
+                          }
+                        }
+                    }
+                }
+              }
+            }
+            stage('tag') {
+              steps {
+                script {
+                    openshift.withCluster() {
+                        openshift.withProject() {
+                          openshift.tag("${templateName}:latest", "${templateName}-staging:latest") 
+                        }
+                    }
+                }
+              }
+            }
+          }
+        }

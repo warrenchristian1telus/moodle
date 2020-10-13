@@ -1,0 +1,81 @@
+kind: DeploymentConfig
+apiVersion: apps.openshift.io/v1
+metadata:
+  name: moodle
+  namespace: d9r6jk-dev
+  spec:
+    strategy:
+      dockerStrategy:
+        from:
+          kind: "ImageStreamTag"
+          name: "moodle:dev"
+      type: Rolling
+      rollingParams:
+        maxUnavailable: 50%
+        maxSurge: 75%
+      resources: {}
+      activeDeadlineSeconds: 21600
+    triggers:
+      - type: ConfigChange
+    replicas: 1
+    revisionHistoryLimit: 10
+    test: false
+    paused: false
+    selector:
+      app: moodle
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: moodle
+      spec:
+        volumes:
+          - name: moodle-storage-claim
+            persistentVolumeClaim:
+              claimName: moodle-storage-claim
+        containers:
+          - resources: {}
+            terminationMessagePath: /dev/termination-log
+            name: moodle
+            env:
+              - name: PROJECT_NAME
+                value: d9r6jk-dev
+              - name: SITE_URL
+                value: 'http://moodle.aro.devops.gov.bc.ca'
+              - name: MOODLE_VERSION
+                value: '3.9.2'
+              - name: MYSQL_TAG
+                value: '5.7'
+              - name: DB_NAME
+                value: moodle
+              - name: DB_HOST_NAME
+                value: mysql
+              - name: DB_PORT
+                value: 3307
+              - name: DB_USER
+                value: moodle
+              - name: DB_PASSWORD
+                value: rbBjP4dn*sLu7r9zm&yPczZNc
+              - name: DB_ROOT_PASSWORD
+                value: rbBjP4dn*sLu7r9zm&yPczZNc
+              - name: COMPOSER_NO_INTERACTION
+                value: 1
+              - name: COMPOSER_MEMORY_LIMIT
+                value: '-1'
+              - name: HTTP_PORT
+                value: 8080
+              - name: HTTPS_PORT
+                value: 4433
+              - name: PHPMYADMIN_PORT
+                value: 8181
+            ports:
+              - containerPort: 8080
+                protocol: TCP
+            imagePullPolicy: IfNotPresent
+            volumeMounts:
+              - name: moodle-storage-claim
+                mountPath: /moodledata
+            terminationMessagePolicy: File
+            image: 'warrenchristian1/moodle:dev'
+        restartPolicy: Always
+

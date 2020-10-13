@@ -33,10 +33,10 @@ spec:
           value: warren.christian1@telus.com
         - name: MOODLE_PASSWORD
           value: pa33w0rd
-        - name: MOODLE_SITE_NAME
+        - name: PROJECT_NAME
         - name: MOODLE_USERNAME
           value: admin
-        - name: MOODLE_WWW_ROOT
+        - name: SITE_URL
         image: aesr/moodle
         name: moodle
         ports:
