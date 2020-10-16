@@ -274,13 +274,6 @@
       "value": "${APP_NAME}"
     },
     {
-      "description": "Database tag name (specifies version).",
-      "displayName": "DB Version",
-      "name": "MYSQL_VERSION",
-      "required": true,
-      "value": "${MYSQL_VERSION}"
-    },
-    {
       "description": "Database service name.",
       "displayName": "DB Service Name",
       "name": "DB_SERVICE_NAME",

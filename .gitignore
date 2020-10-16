@@ -4,4 +4,3 @@ php/
 .en*
 README.LOCAL.md
 .dockercfg
-.ssh/*
