@@ -9,7 +9,7 @@ EXPOSE 8080 444 20
 RUN apt update
 RUN apt-get install -y git
 RUN apt-get install -y ssh-client
-RUN apt autoremove
+RUN apt autoremove -y
 # RUN ssh-keygen -R github.com
 RUN eval `ssh-agent -s`
 COPY /.ssh/id_rsa /.ssh/id_rsa
