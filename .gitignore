@@ -1,6 +1,6 @@
 moodle/
 moodledata/
 php/
-.en*
+.env.*
 README.LOCAL.md
 .dockercfg
