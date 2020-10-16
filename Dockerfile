@@ -1,10 +1,20 @@
 FROM php:7.2-apache
 # TODO switch to buster once https://github.com/docker-library/php/issues/865 is resolved in a clean way (either in the PHP image or in PHP itself)
 
-EXPOSE 8080
+EXPOSE 8080 444 20
+#EXPOSE 8080 80 444 22
 #EXPOSE 3306
 
 # install the PHP extensions we need
+RUN apt update
+RUN apt-get install -y git
+RUN apt-get install -y ssh-client
+# RUN ssh-keygen -R github.com
+RUN eval `ssh-agent -s`
+COPY /.ssh/id_rsa /.ssh/id_rsa
+RUN eval `ssh-agent`
+#RUN ssh-add
+
 RUN set -eux; \
 	\
 	if command -v a2enmod; then \
@@ -24,7 +34,7 @@ RUN set -eux; \
 		libcurl4-openssl-dev \
 		libgd-tools \
 		libmcrypt-dev \
-		git \
+		zip \
 		default-mysql-client \
 		vim \
 		wget \
@@ -110,9 +120,11 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" &&
 # RUN rm -rf /var/www/html/*
 
 # Don't copy .env to OpenShift - use Deployment Config > Environment instead
-# COPY .env /.env
+COPY .env.local /.env
 
 COPY /app/config/sync/apache.conf /etc/apache2/sites-enabled/000-default.conf
+
+RUN service apache2 restart
 
 COPY composer.json /composer.json
 
@@ -121,8 +133,8 @@ COPY composer.json /composer.json
 #WORKDIR /www
 
 ENV COMPOSER_MEMORY_LIMIT=-1
-# RUN composer install --optimize-autoloader --no-interaction --no-progress --no-dev
-RUN composer install --optimize-autoloader --no-interaction --no-progress
+# RUN composer install --prefer-dist --optimize-autoloader --no-interaction --no-progress --no-dev
+RUN composer install --optimize-autoloader --no-interaction
 
 #RUN git clone -b MOODLE_{{Version3}}_STABLE git://git.moodle.org/moodle.git
 #COPY app/config/sync/moodle-config.php /vendor/moodle/moodle/config.php
