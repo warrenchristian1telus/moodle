@@ -3,4 +3,5 @@ moodledata/
 php/
 .env.*
 README.LOCAL.md
+README.PATHFINDER.md
 .dockercfg

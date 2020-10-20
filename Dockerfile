@@ -1,20 +1,22 @@
 FROM php:7.2-apache
 # TODO switch to buster once https://github.com/docker-library/php/issues/865 is resolved in a clean way (either in the PHP image or in PHP itself)
 
-EXPOSE 8080 444 20
+EXPOSE 8080
 #EXPOSE 8080 80 444 22
 #EXPOSE 3306
 
 # install the PHP extensions we need
-RUN apt update
+RUN apt-get update
 RUN apt-get install -y git
 RUN apt-get install -y ssh-client
 RUN apt autoremove -y
+COPY .ssh/id_rsa /.ssh/id_rsa
 # RUN ssh-keygen -R github.com
-RUN eval `ssh-agent -s`
-COPY /.ssh/id_rsa /.ssh/id_rsa
-RUN eval `ssh-agent`
+#RUN eval `ssh-agent -s`
+#RUN eval `ssh-agent`
+RUN cat /.ssh/id_rsa && chmod 600 /.ssh/id_rsa && eval "$(ssh-agent -s)"
 #RUN ssh-add
+#RUN ssh-add /.ssh/id_rsa
 
 RUN set -eux; \
 	\
@@ -121,13 +123,18 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" &&
 # RUN rm -rf /var/www/html/*
 
 # Don't copy .env to OpenShift - use Deployment Config > Environment instead
-COPY .env /.env
+COPY .env.local ./.env
 
-COPY /app/config/sync/apache.conf /etc/apache2/sites-enabled/000-default.conf
+# COPY /app/config/sync/apache.conf /etc/apache2/sites-enabled/000-default.conf
+COPY app/config/sync/apache2.conf /etc/apache2/apache2.conf
+COPY app/config/sync/ports.conf /etc/apache2/ports.conf
+COPY app/config/sync/web-root.htaccess /vendor/moodle/.htaccess
+
+RUN chown -R www-data:www-data /vendor/moodle
 
 RUN service apache2 restart
 
-COPY composer.json /composer.json
+COPY composer.json ./composer.json
 
 #RUN mkdir /www
 
