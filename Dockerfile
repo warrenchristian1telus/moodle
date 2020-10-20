@@ -123,7 +123,7 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" &&
 # RUN rm -rf /var/www/html/*
 
 # Don't copy .env to OpenShift - use Deployment Config > Environment instead
-COPY .env.local ./.env
+COPY .env ./.env
 
 # COPY /app/config/sync/apache.conf /etc/apache2/sites-enabled/000-default.conf
 COPY app/config/sync/apache2.conf /etc/apache2/apache2.conf
