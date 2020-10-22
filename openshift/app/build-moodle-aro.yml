@@ -1,0 +1,19 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: moodle
+  labels:
+    app: moodle
+spec:
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/warrenchristian1telus/moodle.git'
+  output:
+    to:
+      kind: ImageStreamTag
+      name: "moodle:openshift"
+      namespace: moodle-aro
+  strategy:
+    dockerStrategy:
+      dockerfilePath: Dockerfile

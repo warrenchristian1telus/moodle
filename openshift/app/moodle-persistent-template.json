@@ -34,6 +34,31 @@
 				"database-root-password": "${DB_ROOT_PASSWORD}",
 				"database-user": "${DB_USER}"
 			}
+    },
+    {
+			"apiVersion": "v1",
+			"kind": "Route",
+			"metadata": {
+        "name": "${APP_NAME}-route",
+        "namespace": "${PROJECT_NAMESPACE}",
+        "labels": {
+          "app": "${APP_NAME}",
+          "app.kubernetes.io/component": "${APP_NAME}",
+          "app.kubernetes.io/instance": "${APP_NAME}"
+        }
+      },
+      "spec": {
+        "host": "moodle-moodle-aro.apps-crc.testing",
+        "to": {
+          "kind": "Service",
+          "name": "moodle",
+          "weight": 100
+        },
+        "port": {
+          "targetPort": "${CONTAINER_PORT}-tcp"
+        },
+        "wildcardPolicy": "None"
+      }
 		},
     {
       "apiVersion": "v1",
@@ -94,13 +119,14 @@
             "source": {
               "type": "Git",
               "git": {
-                "uri": "${GIT_URL}"
+                "uri": "${GIT_URL}",
+                "ref": "${GIT_TAG}"
               }
             },
             "output": {
               "to": {
                 "kind": "ImageStreamTag",
-                "name": "${BUILD_IMAGE}",
+                "name": "${GIT_PROJECT}:${GIT_TAG}",
                 "namespace": "${PROJECT_NAMESPACE}"
               }
             },
@@ -185,11 +211,11 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "mysql"
+                "${APP_NAME}"
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "moodle:openshift"
+                "name": "${GIT_PROJECT}:${GIT_TAG}"
               }
             },
             "type": "ImageChange"
@@ -225,7 +251,7 @@
             ],
             "from": {
               "kind": "ImageStreamTag",
-              "name": "moodle:openshift"
+              "name": "${GIT_PROJECT}:${GIT_TAG}"
             },
             "type": "ImageChange"
           },
@@ -367,6 +393,13 @@
       "value": "${HTTP_PORT}"
     },
     {
+      "description": "Container Ports opened for connections to the application from the Internet.",
+      "displayName": "Container Port",
+      "name": "CONTAINER_PORT",
+      "required": true,
+      "value": "${CONTAINER_PORT}"
+    },
+    {
       "description": "Database service name.",
       "displayName": "DB Service Name",
       "name": "DB_SERVICE_NAME",
@@ -420,6 +453,13 @@
       "name": "GIT_PROJECT",
       "required": true,
       "value": "${GIT_PROJECT}"
+    },
+    {
+      "description": "Git project URL.",
+      "displayName": "Git URL",
+      "name": "GIT_URL",
+      "required": true,
+      "value": "${GIT_URL}"
     },
     {
       "description": "Git project tag to use for source.",
