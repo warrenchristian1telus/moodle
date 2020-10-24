@@ -152,6 +152,6 @@ ENV COMPOSER_MEMORY_LIMIT=-1
 RUN composer install --optimize-autoloader --no-interaction
 
 #RUN git clone -b MOODLE_{{Version3}}_STABLE git://git.moodle.org/moodle.git
-#COPY app/config/sync/moodle-config.php /vendor/moodle/moodle/config.php
+COPY app/config/sync/moodle-config.php /vendor/moodle/moodle/config.php
 
 # vim:set ft=dockerfile:
