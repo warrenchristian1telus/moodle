@@ -5,16 +5,24 @@ EXPOSE 8080
 #EXPOSE 8080 80 444 22
 #EXPOSE 3306
 
+RUN rm -vfr /var/lib/apt/lists/*
+
+##RUN chmod o+r /etc/resolv.conf
+
 # install the PHP extensions we need
-RUN apt-get update
-RUN apt-get install -y git
+RUN apt-get update -y
+RUN apt-get upgrade -y --fix-missing
+RUN apt-get dist-upgrade -y
+#RUN dpkg --configure -a
+#RUN apt-get -f install
 RUN apt-get install -y ssh-client
 RUN apt autoremove -y
+
 COPY .ssh/id_rsa /.ssh/id_rsa
 # RUN ssh-keygen -R github.com
-#RUN eval `ssh-agent -s`
+RUN eval `ssh-agent -s`
 #RUN eval `ssh-agent`
-RUN cat /.ssh/id_rsa && chmod 600 /.ssh/id_rsa && eval "$(ssh-agent -s)"
+###RUN cat /.ssh/id_rsa && chmod 600 /.ssh/id_rsa && eval "$(ssh-agent -s)"
 #RUN ssh-add
 #RUN ssh-add /.ssh/id_rsa
 
@@ -26,7 +34,6 @@ RUN set -eux; \
 	\
 	savedAptMark="$(apt-mark showmanual)"; \
 	\
-	apt-get update; \
 	apt-get install -y \
 		libfreetype6-dev \
 		libjpeg-dev \
@@ -100,7 +107,7 @@ RUN { \
 
 WORKDIR /
 
-RUN apt-get update -y && apt-get install -o Dpkg::Options::="--force-confold" -y -q --no-install-recommends && apt-get clean -y \
+RUN apt-get install -o Dpkg::Options::="--force-confold" -y -q --no-install-recommends && apt-get clean -y \
   ca-certificates \
 	libcurl4-openssl-dev \
 	libgd-tools \

@@ -51,7 +51,7 @@
         "host": "moodle-moodle-aro.apps-crc.testing",
         "to": {
           "kind": "Service",
-          "name": "moodle",
+          "name": "${APP_NAME}-app",
           "weight": 100
         },
         "port": {
@@ -70,11 +70,13 @@
         "ports": [
           {
             "name": "${APP_NAME}",
-            "port": 8080
+            "port": 8080,
+            "targetPort": 8080,
+            "protocol": "TCP"
           }
         ],
         "selector": {
-          "name": "${APP_NAME}-app"
+          "service": "${APP_NAME}-app"
         }
       }
     },
@@ -105,7 +107,7 @@
         "name": "${APP_NAME}-app"
       },
       "spec": {
-        "replicas": 1,
+        "replicas": 2,
         "selector": {
           "name": "${APP_NAME}-app"
         },
@@ -132,6 +134,30 @@
             },
             "containers": [
               {
+                "name": "${APP_NAME}",
+                "image": " ",
+                "imagePullPolicy": "IfNotPresent",
+                "command": "chown",
+                "args": [
+                  "-R",
+                  "www-data:www-data /vendor/moodle"
+                ],
+                "ports": [
+                  {
+                    "containerPort": 8080
+                  }
+                ],
+                "resources": {
+                  "limits": {
+                    "memory": "${MOODLE_MEMORY_LIMIT}"
+                  }
+                },
+                "volumeMounts": [
+                  {
+                    "mountPath": "${MOODLE_DATA_PATH}",
+                    "name": "${APP_NAME}-data"
+                  }
+                ],
                 "env": [
                   {
                     "name": "MYSQL_USER",
@@ -169,25 +195,6 @@
 											}
 										}
 									}
-                ],
-                "name": "${APP_NAME}",
-                "image": " ",
-                "imagePullPolicy": "IfNotPresent",
-                "ports": [
-                  {
-                    "containerPort": 8080
-                  }
-                ],
-                "resources": {
-                  "limits": {
-                    "memory": "${MOODLE_MEMORY_LIMIT}"
-                  }
-                },
-                "volumeMounts": [
-                  {
-                    "mountPath": "${MOODLE_DATA_PATH}",
-                    "name": "${APP_NAME}-data"
-                  }
                 ]
               }
             ],
@@ -243,7 +250,7 @@
           }
         },
         "triggers": {
-          "type": "ConfigChange",
+          "type": "ImageChange",
           "imageChangeParams": {
             "automatic": true,
             "containerNames": [
@@ -251,9 +258,9 @@
             ],
             "from": {
               "kind": "ImageStreamTag",
-              "name": "${GIT_PROJECT}:${GIT_TAG}"
-            },
-            "type": "ImageChange"
+              "name": "${GIT_PROJECT}:${GIT_TAG}",
+              "namespace": "${PROJECT_NAMESPACE}"
+            }
           },
           "strategy": {
             "type": "Rolling"
@@ -268,6 +275,19 @@
           "spec": {
             "containers": [
               {
+                "image": "${BUILD_IMAGE}",
+                "name": "${APP_NAME}-app",
+                "ports": [
+                  {
+                    "containerPort": 8080
+                  }
+                ],
+                "command": "chown",
+                "args": [
+                  "-R",
+                  "www-data:www-data /vendor/moodle"
+                ],
+                "resources": {},
                 "env": [
                   {
                     "name": "APP_NAME",
@@ -325,15 +345,7 @@
                     "name": "GIT_TAG",
                     "value": "${GIT_TAG}"
                   }
-                ],
-                "image": "${BUILD_IMAGE}",
-                "name": "${APP_NAME}-app",
-                "ports": [
-                  {
-                    "containerPort": 8080
-                  }
-                ],
-                "resources": {}
+                ]
               }
             ],
             "restartPolicy": "Always"

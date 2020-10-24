@@ -5,3 +5,4 @@ php/
 README.LOCAL.md
 README.PATHFINDER.md
 .dockercfg
+.vscode/*

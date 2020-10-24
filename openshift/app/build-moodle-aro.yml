@@ -9,6 +9,7 @@ spec:
     type: Git
     git:
       uri: 'https://github.com/warrenchristian1telus/moodle.git'
+      ref: 'openshift'
   output:
     to:
       kind: ImageStreamTag
