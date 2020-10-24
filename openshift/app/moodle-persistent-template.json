@@ -83,8 +83,11 @@
     {
       "apiVersion": "v1",
       "kind": "PersistentVolumeClaim",
+      "nfs": {
+        "path": "/vendor/moodle/moodledata"
+      },
       "metadata": {
-        "name": "${APP_NAME}-app"
+        "name": "${APP_NAME}-data"
       },
       "spec": {
         "accessModes": [
@@ -94,7 +97,8 @@
           "requests": {
             "storage": "${MOODLE_VOLUME_CAPACITY}"
           }
-        }
+        },
+        "storageClassName": "gold"
       }
     },
     {

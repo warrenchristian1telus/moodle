@@ -6,3 +6,4 @@ README.LOCAL.md
 README.PATHFINDER.md
 .dockercfg
 .vscode/*
+docker.moodle.config.php

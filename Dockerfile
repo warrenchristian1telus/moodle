@@ -154,4 +154,12 @@ RUN composer install --optimize-autoloader --no-interaction
 #RUN git clone -b MOODLE_{{Version3}}_STABLE git://git.moodle.org/moodle.git
 COPY app/config/sync/moodle-config.php /vendor/moodle/moodle/config.php
 
+RUN mkdir -p /vendor/moodle/moodledata
+RUN chown -R www-data:www-data /vendor/moodle/moodledata
+
+#RUN cd /vendor/moodle/moodle/admin/cli
+#USER www-data
+#RUN /usr/local/bin/php /vendor/moodle/moodle/admin/cli/install.php
+#RUN chown -R root:root /vendor/moodle/moodle
+
 # vim:set ft=dockerfile:
