@@ -137,11 +137,6 @@
                 "name": "${APP_NAME}",
                 "image": " ",
                 "imagePullPolicy": "IfNotPresent",
-                "command": "chown",
-                "args": [
-                  "-R",
-                  "www-data:www-data /vendor/moodle"
-                ],
                 "ports": [
                   {
                     "containerPort": 8080
@@ -281,11 +276,6 @@
                   {
                     "containerPort": 8080
                   }
-                ],
-                "command": "chown",
-                "args": [
-                  "-R",
-                  "www-data:www-data /vendor/moodle"
                 ],
                 "resources": {},
                 "env": [
