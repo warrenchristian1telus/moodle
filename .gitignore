@@ -7,3 +7,4 @@ README.PATHFINDER.md
 .dockercfg
 .vscode/*
 docker.moodle.config.php
+app/config/sync/moodle-config-docker.php
