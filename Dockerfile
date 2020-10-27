@@ -137,8 +137,6 @@ COPY app/config/sync/apache2.conf /etc/apache2/apache2.conf
 COPY app/config/sync/ports.conf /etc/apache2/ports.conf
 COPY app/config/sync/web-root.htaccess /vendor/moodle/.htaccess
 
-RUN chown -R www-data:www-data /vendor/moodle
-
 RUN service apache2 restart
 
 COPY composer.json ./composer.json
@@ -151,11 +149,16 @@ ENV COMPOSER_MEMORY_LIMIT=-1
 # RUN composer install --prefer-dist --optimize-autoloader --no-interaction --no-progress --no-dev
 RUN composer install --optimize-autoloader --no-interaction
 
+USER root
+
 #RUN git clone -b MOODLE_{{Version3}}_STABLE git://git.moodle.org/moodle.git
 COPY app/config/sync/moodle-config.php /vendor/moodle/moodle/config.php
 
+
 RUN mkdir -p /vendor/moodle/moodledata
+RUN chown -R www-data:www-data /vendor/moodle
 RUN chown -R www-data:www-data /vendor/moodle/moodledata
+RUN chown -R www-data:www-data /vendor/moodle/moodle/config.php
 
 #RUN cd /vendor/moodle/moodle/admin/cli
 #USER www-data
