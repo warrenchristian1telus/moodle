@@ -100,6 +100,137 @@
       }
     },
     {
+      "apiVersion": "v1",
+      "kind": "DeploymentConfig",
+      "metadata": {
+        "annotations": {
+          "template.alpha.openshift.io/wait-for-ready": "true"
+        },
+        "name": "${APP_NAME}-app"
+      },
+      "spec": {
+        "replicas": 2,
+        "selector": {
+          "name": "${APP_NAME}-app"
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "name": "${APP_NAME}-app"
+            }
+          },
+          "spec": {
+            "source": {
+              "type": "Git",
+              "git": {
+                "uri": "${GIT_URL}",
+                "ref": "${GIT_TAG}"
+              }
+            },
+            "output": {
+              "to": {
+                "kind": "ImageStreamTag",
+                "name": "${GIT_PROJECT}:${GIT_TAG}",
+                "namespace": "${PROJECT_NAMESPACE}"
+              }
+            },
+            "containers": [
+              {
+                "name": "${APP_NAME}",
+                "image": " ",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 8080
+                  }
+                ],
+                "resources": {
+                  "limits": {
+                    "memory": "${MOODLE_MEMORY_LIMIT}"
+                  }
+                },
+                "volumeMounts": [
+                  {
+                    "mountPath": "${MOODLE_DATA_PATH}",
+                    "name": "${APP_NAME}-data"
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "MYSQL_USER",
+                    "valueFrom": {
+											"secretKeyRef": {
+												"key": "database-user",
+												"name": "${DB_SERVICE_NAME}"
+											}
+										}
+                  },
+                  {
+										"name": "MYSQL_PASSWORD",
+										"valueFrom": {
+											"secretKeyRef": {
+												"key": "database-password",
+												"name": "${DB_SERVICE_NAME}"
+											}
+										}
+									},
+                  {
+										"name": "MYSQL_ROOT_PASSWORD",
+										"valueFrom": {
+											"secretKeyRef": {
+												"key": "database-root-password",
+												"name": "${DB_SERVICE_NAME}"
+											}
+										}
+									},
+									{
+										"name": "MYSQL_DATABASE",
+										"valueFrom": {
+											"secretKeyRef": {
+												"key": "database-name",
+												"name": "${DB_SERVICE_NAME}"
+											}
+										}
+									}
+                ]
+              }
+            ],
+            "strategy": {
+              "dockerStrategy": {
+                "dockerfilePath": "Dockerfile"
+              }
+            },
+            "volumes": [
+              {
+                "name": "${APP_NAME}-data",
+                "persistentVolumeClaim": {
+                  "claimName": "${APP_NAME}-data"
+                }
+              }
+            ]
+          }
+        },
+        "triggers": [
+          {
+            "imageChangeParams": {
+              "automatic": true,
+              "containerNames": [
+                "${APP_NAME}"
+              ],
+              "from": {
+                "kind": "ImageStreamTag",
+                "name": "${GIT_PROJECT}:${GIT_TAG}"
+              }
+            },
+            "type": "ImageChange"
+          },
+          {
+            "type": "ConfigChange"
+          }
+        ]
+      }
+    },
+    {
       "apiVersion": "apps/v1",
       "kind": "Deployment",
       "metadata": {
