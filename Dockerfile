@@ -7,14 +7,11 @@ EXPOSE 8080
 
 RUN rm -vfr /var/lib/apt/lists/*
 
-##RUN chmod o+r /etc/resolv.conf
-
-# install the PHP extensions we need
 RUN apt-get update -y
 RUN apt-get upgrade -y --fix-missing
 RUN apt-get dist-upgrade -y
-#RUN dpkg --configure -a
-#RUN apt-get -f install
+RUN dpkg --configure -a
+RUN apt-get -f install
 RUN apt-get install -y ssh-client
 RUN apt autoremove -y
 
@@ -53,9 +50,8 @@ RUN set -eux; \
 	; \
 	\
 	docker-php-ext-configure gd \
-		--with-freetype-dir=/usr \
-		--with-jpeg-dir=/usr \
-		--with-png-dir=/usr \
+		--with-freetype=/usr \
+		--with-jpeg=/usr \
 	; \
 	\
 	docker-php-ext-install -j "$(nproc)" \
@@ -67,7 +63,6 @@ RUN set -eux; \
 		ftp \
 		gd \
 		gettext \
-		mbstring \
 		mysqli \
 		opcache \
 		shmop \
@@ -159,6 +154,9 @@ RUN mkdir -p /vendor/moodle/moodledata
 RUN chown -R www-data:www-data /vendor/moodle
 RUN chown -R www-data:www-data /vendor/moodle/moodledata
 RUN chown -R www-data:www-data /vendor/moodle/moodle/config.php
+
+RUN chgrp -R 0 /vendor/moodle/moodledata
+RUN chmod -R g=u /vendor/moodle/moodledata
 
 #RUN cd /vendor/moodle/moodle/admin/cli
 #USER www-data

@@ -148,6 +148,7 @@
                     "containerPort": 8080
                   }
                 ],
+                "imagePullPolicy": "Always",
                 "volumeMounts": [
                   {
                     "mountPath": "${MOODLE_DATA_PATH}",
