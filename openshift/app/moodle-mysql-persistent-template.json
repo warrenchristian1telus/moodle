@@ -378,7 +378,7 @@
                 },
                 "volumeMounts": [
                   {
-                    "mountPath": "${MOODLE_DATA_PATH}",
+                    "mountPath": "${MOODLE_DATA_MOUNT_PATH}",
                     "name": "${APP_NAME}-data"
                   }
                 ]

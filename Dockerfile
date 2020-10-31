@@ -170,16 +170,17 @@ RUN composer install --optimize-autoloader --no-interaction
 USER root
 
 #RUN git clone -b MOODLE_{{Version3}}_STABLE git://git.moodle.org/moodle.git
-COPY app/config/sync/moodle-config.php /vendor/moodle/moodle/config.php
 
 RUN mkdir -p /vendor/moodle/moodledata/
 RUN mkdir -p /vendor/moodle/moodledata/persistent
 RUN chown -R www-data:www-data /vendor/moodle
 RUN chown -R www-data:www-data /vendor/moodle/moodledata/persistent
-RUN chown -R www-data:www-data /vendor/moodle/moodle/config.php
 
 RUN chgrp -R 0 /vendor/moodle/moodledata/persistent
 RUN chmod -R g=u /vendor/moodle/moodledata/persistent
+
+COPY app/config/sync/moodle-config.php /vendor/moodle/moodle/config.php
+RUN chown -R www-data:www-data /vendor/moodle/moodle/config.php
 
 RUN apt autoremove -y
 

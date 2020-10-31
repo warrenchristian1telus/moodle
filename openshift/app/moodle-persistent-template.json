@@ -26,7 +26,7 @@
 					"template.openshift.io/expose-root_password": "{.data['database-root-password']}",
 					"template.openshift.io/expose-username": "{.data['database-user']}"
 				},
-				"name": "${APP_NAME}-secret"
+				"name": "${APP_NAME}-secrets"
 			},
 			"stringData": {
 				"database-name": "${DB_NAME}",
@@ -83,7 +83,7 @@
       "apiVersion": "v1",
       "kind": "PersistentVolumeClaim",
       "nfs": {
-        "path": "/vendor/moodle/moodledata"
+        "path": "${MOODLE_DATA_MOUNT_PATH}"
       },
       "metadata": {
         "name": "${APP_NAME}-data"
@@ -162,12 +162,24 @@
                     "value": "${APP_NAME}"
                   },
                   {
+                    "name": "SITE_NAME",
+                    "value": "${SITE_NAME}"
+                  },
+                  {
                     "name": "SITE_URL",
                     "value": "${SITE_URL}"
                   },
                   {
+                    "name": "APACHE_DOCUMENT_ROOT",
+                    "value": "${APACHE_DOCUMENT_ROOT}"
+                  },
+                  {
                     "name": "MOODLE_MEMORY_LIMIT",
                     "value": "${MOODLE_MEMORY_LIMIT}"
+                  },
+                  {
+                    "name": "MOODLE_DATA_PATH",
+                    "value": "${MOODLE_DATA_PATH}"
                   },
                   {
                     "name": "MOODLE_VOLUME_CAPACITY",
@@ -182,8 +194,8 @@
                     "value": "${DB_SERVICE_NAME}"
                   },
                   {
-                    "name": "DB_HOST_NAME",
-                    "value": "${DB_HOST_NAME}"
+                    "name": "DB_HOST",
+                    "value": "${DB_HOST}"
                   },
                   {
                     "name": "DB_PORT",
@@ -199,11 +211,21 @@
                   },
                   {
                     "name": "DB_USER",
-                    "value": "${DB_USER}"
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "moodle-secrets",
+                        "key": "database-user"
+                      }
+                    }
                   },
                   {
                     "name": "DB_PASSWORD",
-                    "value": "${DB_PASSWORD}"
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "moodle-secrets",
+                        "key": "database-password"
+                      }
+                    }
                   },
                   {
                     "name": "GIT_PROJECT",
@@ -237,6 +259,13 @@
       "name": "APP_NAME",
       "required": true,
       "value": "${APP_NAME}"
+    },
+    {
+      "description": "Website name.",
+      "displayName": "Site Name",
+      "name": "SITE_NAME",
+      "required": true,
+      "value": "${SITE_NAME}"
     },
     {
       "description": "Build image location.",
@@ -274,6 +303,13 @@
       "value": "${MOODLE_VOLUME_CAPACITY}"
     },
     {
+      "description": "Path where the persistent volume will be mounted",
+      "displayName": "Mount Path",
+      "name": "MOODLE_DATA_MOUNT_PATH",
+      "required": true,
+      "value": "${MOODLE_DATA_MOUNT_PATH}"
+    },
+    {
       "description": "Ports opened for connections to the application from the Internet.",
       "displayName": "App Port",
       "name": "HTTP_PORT",
@@ -297,9 +333,9 @@
     {
       "description": "Database host name.",
       "displayName": "DB Host",
-      "name": "DB_HOST_NAME",
+      "name": "DB_HOST",
       "required": true,
-      "value": "${DB_HOST_NAME}"
+      "value": "${DB_HOST}"
     },
     {
       "description": "Database Port opened for connections from other containers.",
@@ -355,6 +391,13 @@
       "name": "GIT_TAG",
       "required": true,
       "value": "${GIT_TAG}"
+    },
+    {
+      "description": "Apache document root directory.",
+      "displayName": "Apache Root",
+      "name": "APACHE_DOCUMENT_ROOT",
+      "required": true,
+      "value": "${APACHE_DOCUMENT_ROOT}"
     }
   ]
 }
