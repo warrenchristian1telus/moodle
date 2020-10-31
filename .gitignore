@@ -1,10 +1,11 @@
 moodle/
 moodledata/
+openshift/
 php/
 .env.*
 README.LOCAL.md
 README.PATHFINDER.md
 .dockercfg
 .vscode/*
-docker.moodle.config.php
+moodle.docker.config.php
 app/config/sync/moodle-config-docker.php

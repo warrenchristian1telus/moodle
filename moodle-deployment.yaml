@@ -23,9 +23,9 @@ spec:
       containers:
       - env:
         - name: MOODLE_DATABASE_USER
-        - name: MOODLE_DATA_ROOT
-          value: /var/www/moodledata
-        - name: MOODLE_DB_HOST
+        - name: MOODLE_DATA_PATH
+          value: /var/www/moodledata/persistent
+        - name: DB_HOST_NAME
           value: mysql
         - name: MOODLE_DB_NAME
         - name: MOODLE_DB_PASSWORD

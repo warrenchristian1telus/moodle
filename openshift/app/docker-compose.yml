@@ -26,12 +26,12 @@ services:
     links:
       - mysql
     environment:
-      MOODLE_DB_HOST: mysql
+      DB_HOST_NAME: mysql
       MOODLE_DB_NAME: $DB_NAME
       MOODLE_DATABASE_USER: $DB_NAME
       MOODLE_DB_PASSWORD: $DB_PASSWORD
       MOODLE_WWW_ROOT: $SITE_URL
-      MOODLE_DATA_ROOT: /var/www/moodledata
+      MOODLE_DATA_PATH: /var/www/moodledata/persistent
       MOODLE_USERNAME: admin
       MOODLE_PASSWORD: pa33w0rd
       MOODLE_EMAIL: admin@email.com
