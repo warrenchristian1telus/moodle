@@ -8,11 +8,6 @@
       "name": "BCDevOps"
     }
   ],
-  "config": {
-    "github-oauth": {
-      "github.com": "a0deb93fa1d5821ba8a7919ea9e1c4fc0e36f3c6"
-    }
-  },
   "repositories": [
     {
       "type": "vcs",
