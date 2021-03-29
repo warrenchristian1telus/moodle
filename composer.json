@@ -8,13 +8,18 @@
       "name": "BCDevOps"
     }
   ],
+  "config": {
+    "github-oauth": {
+      "github.com": "${GITHUB_AUTH_TOKEN}"
+    }
+  },
   "repositories": [
     {
       "type": "vcs",
-      "url": "https://github.com/moodle/moodle.git"
+      "url": "${GIT_MOODLE_URL}"
     }
   ],
   "require": {
-    "moodle/moodle": "3.10.3"
+    "moodle/moodle": "${MOODLE_VERSION}"
   }
 }

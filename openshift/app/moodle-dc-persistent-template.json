@@ -470,6 +470,13 @@
       "name": "APACHE_DOCUMENT_ROOT",
       "required": true,
       "value": "${APACHE_DOCUMENT_ROOT}"
+    },
+    {
+      "description": "GitHub Authorization Token (oAuth)",
+      "displayName": "GitHub oAuth",
+      "name": "GITHUB_AUTH_TOKEN",
+      "required": true,
+      "value": "${GITHUB_AUTH_TOKEN}"
     }
   ]
 }
