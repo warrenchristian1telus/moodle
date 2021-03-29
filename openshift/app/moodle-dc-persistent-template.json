@@ -2,18 +2,21 @@
   "apiVersion": "v1",
   "kind": "Template",
   "labels": {
-    "template": "moodle-persistent-template"
+    "template": "${APP_NAME}"
   },
-  "message": "The following Site has been created in your project: ${APP_NAME}.\nDB: ${DB_NAME}.\n\n  URL: ${SITE_URL}",
+  "message": "The following service(s) have been created in your project: ${DB_NAME}.\n\n       Username: ${DB_USER}\n       Password: ${DB_PASSWORD}\n  Database Name: ${DB_NAME}\n Connection URL: mysql://${DB_NAME}:${DB_PORT}/\n\nFor more information about using this template, including OpenShift considerations, see https://github.com/sclorg/mysql-container/blob/master/5.7/root/usr/share/container-scripts/mysql/README.md.",
   "metadata": {
     "annotations": {
-      "description": "Moodle application service, with persistent storage.",
+      "description": "MySQL database service, with persistent storage. For more information about using this template, including OpenShift considerations, see https://github.com/sclorg/mysql-container/blob/master/5.7/root/usr/share/container-scripts/mysql/README.md.\n\nNOTE: Scaling to more than one replica is not supported. You must have persistent volumes available in your cluster to use this template.",
       "iconClass": "icon-mysql-database",
       "openshift.io/display-name": "MySQL",
-      "openshift.io/long-description": "This template provides a standalone Moodle server (PHP, Moodle).  The application cache is stored on persistent storage.  The database name, username, and password are chosen via parameters when provisioning this service.",
-      "tags": "application,${APP_NAME}"
+      "openshift.io/documentation-url": "https://docs.okd.io/latest/using_images/db_images/mysql.html",
+      "openshift.io/long-description": "This template provides a standalone MySQL server with a database created.  The database is stored on persistent storage.  The database name, username, and password are chosen via parameters when provisioning this service.",
+      "openshift.io/provider-display-name": "Red Hat, Inc.",
+      "openshift.io/support-url": "https://access.redhat.com",
+      "tags": "database,mysql"
     },
-    "name": "moodle-persistent"
+    "name": "mysql-persistent"
   },
   "objects": [
     {
@@ -36,20 +39,49 @@
 			}
     },
     {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "${APP_NAME}"
+      },
+      "spec": {
+        "ports": [
+          {
+            "name": "${APP_NAME}",
+            "port": 8080
+          }
+        ],
+        "selector": {
+          "deploymentconfig": "${APP_NAME}"
+        }
+      }
+    },
+    {
 			"apiVersion": "v1",
 			"kind": "Route",
 			"metadata": {
         "name": "${APP_NAME}",
         "namespace": "${PROJECT_NAMESPACE}",
         "labels": {
-          "service": "${APP_NAME}-app"
+          "service": "${APP_NAME}"
         }
       },
       "spec": {
+        "host": "${SITE_URL}",
         "to": {
           "kind": "Service",
-          "name": "${APP_NAME}-app",
+          "name": "${APP_NAME}",
           "weight": 100
+        },
+        "conditions": [
+          {
+            "type": "Admitted",
+            "status": "True"
+          }
+        ],
+        "tls": {
+          "termination": "edge",
+          "insecureEdgeTerminationPolicy": "Redirect"
         },
         "port": {
           "targetPort": "${APP_NAME}"
@@ -57,29 +89,6 @@
         "wildcardPolicy": "None"
       }
 		},
-    {
-      "apiVersion": "v1",
-      "kind": "Service",
-      "metadata": {
-        "name": "${APP_NAME}-app",
-        "labels": {
-          "service": "${APP_NAME}-app"
-        }
-      },
-      "spec": {
-        "ports": [
-          {
-            "name": "http",
-            "port": 80,
-            "targetPort": 8080,
-            "protocol": "TCP"
-          }
-        ],
-        "selector": {
-          "deployment": "${APP_NAME}-app"
-        }
-      }
-    },
     {
       "apiVersion": "v1",
       "kind": "PersistentVolumeClaim",
@@ -91,7 +100,7 @@
       },
       "spec": {
         "accessModes": [
-          "ReadWriteOnce"
+          "ReadWriteMany"
         ],
         "resources": {
           "requests": {
@@ -101,62 +110,67 @@
       }
     },
     {
-      "apiVersion": "apps/v1",
-      "kind": "Deployment",
+      "apiVersion": "v1",
+      "kind": "DeploymentConfig",
       "metadata": {
-        "labels": {
-          "service": "${APP_NAME}-app"
+        "annotations": {
+          "template.alpha.openshift.io/wait-for-ready": "true"
         },
-        "name": "${APP_NAME}-app"
+        "name": "${APP_NAME}",
+        "namespace": "${PROJECT_NAMESPACE}",
+        "labels": {
+          "service": "${APP_NAME}"
+        }
       },
       "spec": {
-        "replicas": 2,
+        "replicas": 1,
         "selector": {
-          "matchLabels": {
-            "service": "${APP_NAME}-app"
-          }
+          "deploymentconfig": "${APP_NAME}"
         },
-        "triggers": {
-          "type": "ImageChange",
-          "imageChangeParams": {
-            "automatic": true,
-            "containerNames": [
-              "${APP_NAME}-app"
-            ],
-            "from": {
-              "kind": "ImageStreamTag",
-              "name": "${GIT_PROJECT}:${GIT_TAG}",
-              "namespace": "${PROJECT_NAMESPACE}"
-            }
-          },
-          "strategy": {
-            "type": "Rolling"
+        "strategy": {
+          "type": "Rolling",
+          "rollingParams": {
+            "updatePeriodSeconds": 1,
+            "intervalSeconds": 1,
+            "timeoutSeconds": 600,
+            "maxUnavailable": "25%",
+            "maxSurge": "25%"
           }
         },
         "template": {
           "metadata": {
             "labels": {
-              "service": "${APP_NAME}-app"
+              "deploymentconfig": "${APP_NAME}"
             }
           },
           "spec": {
             "containers": [
               {
                 "image": "${BUILD_IMAGE}",
-                "name": "${APP_NAME}-app",
+                "name": "${APP_NAME}",
+                "restartPolicy": "Always",
+                "imagePullPolicy": "Always",
                 "ports": [
                   {
                     "containerPort": 8080
                   }
                 ],
-                "imagePullPolicy": "Always",
                 "volumeMounts": [
                   {
                     "mountPath": "${MOODLE_DATA_PATH}",
                     "name": "${APP_NAME}-data"
                   }
                 ],
-                "resources": {},
+                "resources": {
+                  "limits": {
+                    "memory": "${MOODLE_MEMORY_LIMIT}",
+                    "cpu": "500m"
+                  },
+                  "requests": {
+                    "memory": "${MOODLE_MEMORY_LIMIT}",
+                    "cpu": "100m"
+                  }
+                },
                 "env": [
                   {
                     "name": "APP_NAME",
@@ -235,25 +249,78 @@
                   {
                     "name": "GIT_TAG",
                     "value": "${GIT_TAG}"
+                  },
+                  {
+                    "name": "UPSTREAM_URI",
+                    "value": "http://moodle:8080"
+                  },
+                  {
+                    "name": "HOST_NAME",
+                    "value": "moodle-950003-dev.apps.silver.devops.gov.bc.ca"
+                  },
+                  {
+                    "name": "MYSQL_USER",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "key": "database-user",
+                        "name": "${DB_SERVICE_NAME}"
+                      }
+                    }
+                  },
+                  {
+                    "name": "MYSQL_PASSWORD",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "key": "database-password",
+                        "name": "${DB_SERVICE_NAME}"
+                      }
+                    }
+                  },
+                  {
+                    "name": "MYSQL_ROOT_PASSWORD",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "key": "database-root-password",
+                        "name": "${DB_SERVICE_NAME}"
+                      }
+                    }
+                  },
+                  {
+                    "name": "MYSQL_DATABASE",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "key": "database-name",
+                        "name": "${DB_SERVICE_NAME}"
+                      }
+                    }
                   }
                 ]
               }
             ],
-            "restartPolicy": "Always",
             "volumes": [
               {
                 "name": "${APP_NAME}-data",
                 "persistentVolumeClaim": {
-                  "claimName": "${APP_NAME}-data",
-                  "configMap": {
-                    "name": "${APP_NAME}-config",
-                    "defaultMode": 420
-                  }
+                  "claimName": "${APP_NAME}-data"
+                }
+              },
+              {
+                "name": "${APP_NAME}-config",
+                "configMap": {
+                  "name": "${APP_NAME}-config",
+                  "defaultMode": 420
                 }
               }
             ]
           }
-        }
+        },
+        "triggers": [
+          {
+            "type": "ConfigChange"
+          }
+        ],
+        "revisionHistoryLimit": 10,
+        "test": false
       }
     }
   ],

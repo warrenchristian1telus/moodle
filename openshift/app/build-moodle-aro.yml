@@ -15,6 +15,10 @@ spec:
       kind: ImageStreamTag
       name: "moodle:openshift"
       namespace: moodle-aro
+  resources:
+    limits:
+      cpu: "1000m"
+      memory: "256Mi"
   strategy:
     dockerStrategy:
       dockerfilePath: Dockerfile

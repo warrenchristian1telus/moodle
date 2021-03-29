@@ -3,9 +3,6 @@ moodledata/
 moodledata-docker/
 moodle.pod.moodle-app-758d56f55-2lbsc/
 misc/
-openshift/
-libs/
-php/
 .env.*
 README.LOCAL.md
 README.PATHFINDER.md
@@ -14,3 +11,5 @@ README.PATHFINDER.md
 moodle.docker.config.php
 app/config/sync/moodle-config-docker.php
 vitess/
+docker.tar.gz
+.docker/config.json

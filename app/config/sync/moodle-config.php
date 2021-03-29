@@ -24,6 +24,8 @@ $CFG->admin     = 'admin';
 
 $CFG->directorypermissions = 0777;
 
+$CFG->sslproxy = true;
+
 $CFG->getremoteaddrconf = 0;
 
 require_once(__DIR__ . '/lib/setup.php');

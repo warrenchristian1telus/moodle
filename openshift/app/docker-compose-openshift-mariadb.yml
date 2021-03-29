@@ -1,0 +1,47 @@
+version: '3'
+services:
+  db:
+    image: mariadb:$MYSQL_TAG
+    environment:
+      MYSQL_DATABASE: $DB_NAME
+      MYSQL_USER: $DB_USER
+      MYSQL_PASSWORD: $DB_PASSWORD
+      MYSQL_ROOT_PASSWORD: $DB_ROOT_PASSWORD
+    ports:
+      - '$DB_PORT:$DB_PORT'
+    volumes:
+      - ./db_data:/var/lib/mysql
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "$PHPMYADMIN_PORT:80"
+    links:
+      - db:database
+    environment:
+      PMA_HOST: database
+    depends_on:
+      - db
+  moodle:
+    image: warrenchristian1/moodle:openshift
+    ports:
+      - '$HTTP_PORT:$HTTP_PORT'
+    links:
+      - db:database
+    environment:
+      DB_HOST: $DB_HOST
+      DB_PORT: $DB_PORT
+      DB_NAME: $DB_NAME
+      HTTP_PORT: $HTTP_PORT
+      DB_PASSWORD: $DB_PASSWORD
+      SITE_URL: $SITE_URL
+      MOODLE_DATA_PATH: $MOODLE_DATA_PATH
+      DB_USER: $DB_USER
+      MOODLE_EMAIL: admin@email.com
+      SITE_NAME: $SITE_NAME
+    volumes:
+      - ./moodle_data:/vendor/moodle/moodledata
+    depends_on:
+      - db
+volumes:
+  moodle_data: {}
+  db_data: {}

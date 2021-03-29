@@ -21,9 +21,8 @@ $CFG->dboptions = array (
 $CFG->wwwroot   = getenv('SITE_URL');
 $CFG->dataroot  = getenv('MOODLE_DATA_PATH');
 $CFG->admin     = 'admin';
-
+$CFG->sslproxy  = true;
 $CFG->directorypermissions = 0777;
-
 $CFG->getremoteaddrconf = 0;
 
 require_once(__DIR__ . '/lib/setup.php');
