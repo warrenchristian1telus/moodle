@@ -1,4 +1,4 @@
-FROM php:7.2-apache
+FROM php:7.4.20-apache
 # TODO switch to buster once https://github.com/docker-library/php/issues/865 is resolved in a clean way (either in the PHP image or in PHP itself)
 
 EXPOSE 8080
